@@ -1,7 +1,9 @@
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import { LoginUsers, Users } from './data/user';
+import { Dicts } from './data/dict';
 let _Users = Users;
+let _Dicts = Dicts;
 
 export default {
   /**
@@ -139,6 +141,114 @@ export default {
         age: age,
         birth: birth,
         sex: sex
+      });
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          resolve([200, {
+            code: 200,
+            msg: '新增成功'
+          }]);
+        }, 500);
+      });
+    });
+
+
+    //获取数据词典列表
+    mock.onGet('/dict/list').reply(config => {
+      let {type, description} = config.params;
+      let mockDicts = _Dicts.filter(dict => {
+        if ((type && dict.type.indexOf(type) == -1)||(description && dict.description.indexOf(description) == -1)) return false;
+        return true;
+      });
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          resolve([200, {
+            dicts: mockDicts
+          }]);
+        }, 1000);
+      });
+    });
+
+    //获取数据词典列表（分页）
+    mock.onGet('/dict/listpage').reply(config => {
+      let {page,pageSize,type, description} = config.params;
+      let mockDicts = _Dicts.filter(dict => {
+        if ((type && dict.type.indexOf(type) == -1)||(description && dict.description.indexOf(description) == -1)) return false;
+        return true;
+      });
+      let total = mockDicts.length;
+      mockDicts = mockDicts.filter((u, index) => index < pageSize * page && index >= pageSize * (page - 1));
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          resolve([200, {
+            total: total,
+            dicts: mockDicts
+          }]);
+        }, 1000);
+      });
+    });
+
+    //删除数据词典
+    mock.onGet('/dict/remove').reply(config => {
+      let { id } = config.params;
+      _Users = _Users.filter(u => u.id !== id);
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          resolve([200, {
+            code: 200,
+            msg: '删除成功'
+          }]);
+        }, 500);
+      });
+    });
+
+    //批量删除数据词典
+    mock.onGet('/dict/batchremove').reply(config => {
+      let { ids } = config.params;
+      ids = ids.split(',');
+      _Users = _Users.filter(u => !ids.includes(u.id));
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          resolve([200, {
+            code: 200,
+            msg: '删除成功'
+          }]);
+        }, 500);
+      });
+    });
+
+    //编辑数据词典
+    mock.onGet('/dict/edit').reply(config => {
+      let { id, value, label, type, description, order } = config.params;
+      _Users.some(u => {
+        if (u.id === id) {
+          u.value = value;
+          u.label = label;
+          u.type = type;
+          u.description = description;
+          u.order = order;
+          return true;
+        }
+      });
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          resolve([200, {
+            code: 200,
+            msg: '编辑成功'
+          }]);
+        }, 500);
+      });
+    });
+
+    //新增数据词典
+    mock.onGet('/dict/add').reply(config => {
+      let { value, label, type, description, order } = config.params;
+      _Users.push({
+        value: value,
+        label: label,
+        type: type,
+        description: description,
+        order: order
       });
       return new Promise((resolve, reject) => {
         setTimeout(() => {

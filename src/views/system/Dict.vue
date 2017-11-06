@@ -4,10 +4,13 @@
 		<el-col :span="24" class="toolbar" style="padding-bottom: 0px;">
 			<el-form :inline="true" :model="filters">
 				<el-form-item>
-					<el-input v-model="filters.name" placeholder="姓名"></el-input>
+					<el-input v-model="filters.type" placeholder="类型"></el-input>
 				</el-form-item>
 				<el-form-item>
-					<el-button type="primary" v-on:click="getUsers">查询</el-button>
+					<el-input v-model="filters.description" placeholder="描述"></el-input>
+				</el-form-item>
+				<el-form-item>
+					<el-button type="primary" v-on:click="getDicts">查询</el-button>
 				</el-form-item>
 				<el-form-item>
 					<el-button type="primary" @click="handleAdd">新增</el-button>
@@ -16,20 +19,20 @@
 		</el-col>
 
 		<!--列表-->
-		<el-table :data="users" highlight-current-row v-loading="listLoading" @selection-change="selsChange" style="width: 100%;">
+		<el-table :data="dicts" highlight-current-row v-loading="listLoading" @selection-change="selsChange" style="width: 100%;">
 			<el-table-column type="selection" width="55">
 			</el-table-column>
 			<el-table-column type="index" width="60">
 			</el-table-column>
-			<el-table-column prop="name" label="姓名" width="120" sortable>
+			<el-table-column prop="value" label="键值" width="120" sortable>
 			</el-table-column>
-			<el-table-column prop="sex" label="性别" width="100" :formatter="formatSex" sortable>
+			<el-table-column prop="label" label="标签" width="100" sortable>
 			</el-table-column>
-			<el-table-column prop="age" label="年龄" width="100" sortable>
+			<el-table-column prop="type" label="类型" width="100" sortable>
 			</el-table-column>
-			<el-table-column prop="birth" label="生日" width="120" sortable>
+			<el-table-column prop="description" label="描述" width="120" sortable>
 			</el-table-column>
-			<el-table-column prop="addr" label="地址" min-width="180" sortable>
+			<el-table-column prop="order" label="排序" min-width="180" sortable>
 			</el-table-column>
 			<el-table-column label="操作" width="150">
 				<template scope="scope">
@@ -53,23 +56,23 @@
 		<!--编辑界面-->
 		<el-dialog title="编辑" v-model="editFormVisible" :close-on-click-modal="false">
 			<el-form :model="editForm" label-width="80px" :rules="editFormRules" ref="editForm">
-				<el-form-item label="姓名" prop="name">
-					<el-input v-model="editForm.name" auto-complete="off"></el-input>
+				<el-form-item label="键值" prop="value">
+					<el-input v-model="editForm.value" auto-complete="off"></el-input>
 				</el-form-item>
-				<el-form-item label="性别">
-					<el-radio-group v-model="editForm.sex">
-						<el-radio class="radio" :label="1">男</el-radio>
-						<el-radio class="radio" :label="0">女</el-radio>
-					</el-radio-group>
+				<el-form-item label="标签" prop="label">
+					<el-input v-model="editForm.label" auto-complete="off"></el-input>
 				</el-form-item>
-				<el-form-item label="年龄">
-					<el-input-number v-model="editForm.age" :min="0" :max="200"></el-input-number>
+				<el-form-item label="类型" prop="type">
+					<el-input v-model="editForm.type" auto-complete="off"></el-input>
 				</el-form-item>
-				<el-form-item label="生日">
-					<el-date-picker type="date" placeholder="选择日期" v-model="editForm.birth"></el-date-picker>
+				<el-form-item label="描述" prop="description">
+					<el-input v-model="editForm.description" auto-complete="off"></el-input>
 				</el-form-item>
-				<el-form-item label="地址">
-					<el-input type="textarea" v-model="editForm.addr"></el-input>
+				<el-form-item label="排序">
+					<el-input-number v-model="editForm.order" :min="0" :max="999"></el-input-number>
+				</el-form-item>
+				<el-form-item label="备注">
+					<el-input type="textarea" v-model="editForm.remarks"></el-input>
 				</el-form-item>
 			</el-form>
 			<div slot="footer" class="dialog-footer">
@@ -81,23 +84,23 @@
 		<!--新增界面-->
 		<el-dialog title="新增" v-model="addFormVisible" :close-on-click-modal="false">
 			<el-form :model="addForm" label-width="80px" :rules="addFormRules" ref="addForm">
-				<el-form-item label="姓名" prop="name">
-					<el-input v-model="addForm.name" auto-complete="off"></el-input>
+				<el-form-item label="键值" prop="value">
+					<el-input v-model="addForm.value" auto-complete="off"></el-input>
 				</el-form-item>
-				<el-form-item label="性别">
-					<el-radio-group v-model="addForm.sex">
-						<el-radio class="radio" :label="1">男</el-radio>
-						<el-radio class="radio" :label="0">女</el-radio>
-					</el-radio-group>
+				<el-form-item label="标签" prop="label">
+					<el-input v-model="addForm.label" auto-complete="off"></el-input>
 				</el-form-item>
-				<el-form-item label="年龄">
-					<el-input-number v-model="addForm.age" :min="0" :max="200"></el-input-number>
+				<el-form-item label="类型" prop="type">
+					<el-input v-model="addForm.type" auto-complete="off"></el-input>
 				</el-form-item>
-				<el-form-item label="生日">
-					<el-date-picker type="date" placeholder="选择日期" v-model="addForm.birth"></el-date-picker>
+				<el-form-item label="描述" prop="description">
+					<el-input v-model="addForm.description" auto-complete="off"></el-input>
 				</el-form-item>
-				<el-form-item label="地址">
-					<el-input type="textarea" v-model="addForm.addr"></el-input>
+				<el-form-item label="排序">
+					<el-input-number v-model="addForm.order" :min="0" :max="999"></el-input-number>
+				</el-form-item>
+				<el-form-item label="备注">
+					<el-input type="textarea" v-model="addForm.remarks"></el-input>
 				</el-form-item>
 			</el-form>
 			<div slot="footer" class="dialog-footer">
@@ -111,7 +114,7 @@
 <script>
 	import util from '../../common/js/util'
 	//import NProgress from 'nprogress'
-	import { getUserListPage, removeUser, batchRemoveUser, editUser, addUser } from '../../api/api';
+	import { getDictListPage, removeDict, batchRemoveDict, editDict, addDict } from '../../api/api';
 
 	export default {
 		data() {
@@ -120,7 +123,7 @@
 					name: '',
 					per_page: 10
 				},
-				users: [],
+				dicts: [],
 				total: 0,
 				page: 1,
 				listLoading: false,
@@ -129,63 +132,62 @@
 				editFormVisible: false,//编辑界面是否显示
 				editLoading: false,
 				editFormRules: {
-					name: [
-						{ required: true, message: '请输入姓名', trigger: 'blur' }
+					value: [
+						{ required: true, message: '请输入键值', trigger: 'blur' }
 					]
 				},
 				//编辑界面数据
 				editForm: {
 					id: 0,
-					name: '',
-					sex: -1,
-					age: 0,
-					birth: '',
-					addr: ''
+					value: 0,
+					label: '',
+					type: '',
+					description: '',
+					order: 0,
+					remarks: ''
 				},
 
 				addFormVisible: false,//新增界面是否显示
 				addLoading: false,
 				addFormRules: {
-					name: [
-						{ required: true, message: '请输入姓名', trigger: 'blur' }
+					value: [
+						{ required: true, message: '请输入键值', trigger: 'blur' }
 					]
 				},
 				//新增界面数据
 				addForm: {
-					name: '',
-					sex: -1,
-					age: 0,
-					birth: '',
-					addr: ''
+					value: 0,
+					label: '',
+					type: '',
+					description: '',
+					order: 0,
+					remarks: ''
 				}
 
 			}
 		},
 		methods: {
-			//性别显示转换
-			formatSex: function (row, column) {
-				return row.sex == 1 ? '男' : row.sex == 0 ? '女' : '未知';
-			},
 			handleCurrentChange(val) {
 				this.page = val;
-				this.getUsers();
+				this.getDicts();
 			},
 			pageSizeChange(val) {
 				this.filters.per_page = val;
-				this.getUsers();
+				this.getDicts();
 			},
 			//获取用户列表
-			getUsers() {
+			getDicts() {
 				let para = {
 					page: this.page,
 					pageSize: this.filters.per_page,
-					name: this.filters.name
+					type: this.filters.type,
+					description: this.filters.description
 				};
 				this.listLoading = true;
 				//NProgress.start();
-				getUserListPage(para).then((res) => {
+				getDictListPage(para).then((res) => {
 					this.total = res.data.total;
-					this.users = res.data.users;
+					this.dicts = res.data.dicts;
 					this.listLoading = false;
 					//NProgress.done();
 				});
@@ -205,7 +207,7 @@
 							message: '删除成功',
 							type: 'success'
 						});
-						this.getUsers();
+						this.getDicts();
 					});
 				}).catch(() => {
 
@@ -220,11 +222,12 @@
 			handleAdd: function () {
 				this.addFormVisible = true;
 				this.addForm = {
-					name: '',
-					sex: -1,
-					age: 0,
-					birth: '',
-					addr: ''
+					value: 0,
+					label: '',
+					type: '',
+					description: '',
+					order: 0,
+					remarks: ''
 				};
 			},
 			//编辑
@@ -235,8 +238,7 @@
 							this.editLoading = true;
 							//NProgress.start();
 							let para = Object.assign({}, this.editForm);
-							para.birth = (!para.birth || para.birth == '') ? '' : util.formatDate.format(new Date(para.birth), 'yyyy-MM-dd');
-							editUser(para).then((res) => {
+							editDict(para).then((res) => {
 								this.editLoading = false;
 								//NProgress.done();
 								this.$message({
@@ -245,7 +247,7 @@
 								});
 								this.$refs['editForm'].resetFields();
 								this.editFormVisible = false;
-								this.getUsers();
+								this.getDicts();
 							});
 						});
 					}
@@ -259,8 +261,7 @@
 							this.addLoading = true;
 							//NProgress.start();
 							let para = Object.assign({}, this.addForm);
-							para.birth = (!para.birth || para.birth == '') ? '' : util.formatDate.format(new Date(para.birth), 'yyyy-MM-dd');
-							addUser(para).then((res) => {
+							addDict(para).then((res) => {
 								this.addLoading = false;
 								//NProgress.done();
 								this.$message({
@@ -269,7 +270,7 @@
 								});
 								this.$refs['addForm'].resetFields();
 								this.addFormVisible = false;
-								this.getUsers();
+								this.getDicts();
 							});
 						});
 					}
@@ -287,14 +288,14 @@
 					this.listLoading = true;
 					//NProgress.start();
 					let para = { ids: ids };
-					batchRemoveUser(para).then((res) => {
+					batchRemoveDicts(para).then((res) => {
 						this.listLoading = false;
 						//NProgress.done();
 						this.$message({
 							message: '删除成功',
 							type: 'success'
 						});
-						this.getUsers();
+						this.getDicts();
 					});
 				}).catch(() => {
 
@@ -302,7 +303,7 @@
 			}
 		},
 		mounted() {
-			this.getUsers();
+			this.getDicts();
 		}
 	}
 
